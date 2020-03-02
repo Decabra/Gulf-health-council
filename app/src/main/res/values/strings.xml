@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">GHC</string>
+    <string name="title_home_activity">GHC Medical Center</string>
+    <string name="country_label">Country</string>
+    <string name="city_label">City</string>
+    <string name="travel_label">Country Traveling To</string>
+    <string name="medical_label">Alert Medical Center</string>
+    <string name="button_label">Update</string>
+    <string name="country_error">select your country</string>
+    <string name="city_error">select your city</string>
+    <string name="travel_error">select your GCC country</string>
+    <string name="medical_error">select your medical center</string>
+    <string name="medical_message">No medical center found. Please Click Here to update medical centers list.</string>
+    <string name="email_box_label">Email</string>
+    <string name="debug_mode_label">Debug Mode</string>
+    <string name="send_medical_list_label">Send Medical List</string>
+    <string name="medical_alert_time_label">Send Medical List After TIme</string>
+    <string name="sms_live_label">Live sms</string>
+    <string name="check_center_label">Check Medical Center After Time</string>
+
+</resources>
