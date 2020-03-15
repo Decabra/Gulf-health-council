@@ -1,30 +1,26 @@
 package com.example.ghc;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
-import androidx.viewpager.widget.ViewPager;
-
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import android.os.StrictMode;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-
 public class MainActivity extends AppCompatActivity{
-    BasicFragment BF;
-    AlertFragment AF;
-    SecurityFragment SF;
-    MoreFragment MF;
+
+    final BasicFragment BF = new BasicFragment();
+    final AlertFragment AF = new AlertFragment();
+    final SecurityFragment SF = new SecurityFragment();
+    final MoreFragment MF = new MoreFragment();
+    final FragmentManager fm = getSupportFragmentManager();
+    Fragment active = BF;
+
+
+    private FetchData fetchData;
+
     BottomNavigationView bottomNavigation;
-    MenuItem prevMenuItem;
-    private ViewPager viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,84 +28,44 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
         this.setTitle(getResources().getString(R.string.title_home_activity));
 
+        //Need to be look strictly and change
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        viewPager = findViewById(R.id.view_pager);
         bottomNavigation = findViewById(R.id.bottom_navigation);
-//        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-//        NavigationUI.setupWithNavController(bottomNavigation, navController);
-        bottomNavigation.setOnNavigationItemSelectedListener( new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                switch (menuItem.getItemId()) {
-                    case R.id.nav_basic:
-                        viewPager.setCurrentItem(0);
-                        break;
-                    case R.id.nav_alert:
-                        viewPager.setCurrentItem(1);
-                        break;
-                    case R.id.nav_security:
-                        viewPager.setCurrentItem(2);
-                        break;
-                    case R.id.nav_more:
-                        viewPager.setCurrentItem(4);
-                        break;
-                }
-                return false;
-            }
-        });
+        bottomNavigation.setOnNavigationItemSelectedListener(navListener);
 
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        fm.beginTransaction().add(R.id.fragment_container, MF, "4").hide(MF).commit();
+        fm.beginTransaction().add(R.id.fragment_container, SF, "3").hide(SF).commit();
+        fm.beginTransaction().add(R.id.fragment_container, AF, "2").hide(AF).commit();
+        fm.beginTransaction().add(R.id.fragment_container,BF, "1").commit();
 
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                if (prevMenuItem != null) {
-                    prevMenuItem.setChecked(false);
-                }
-                else
-                {
-                    bottomNavigation.getMenu().getItem(0).setChecked(false);
-                }
-                Log.d("page", "onPageSelected: "+position);
-                bottomNavigation.getMenu().getItem(position).setChecked(true);
-                prevMenuItem = bottomNavigation.getMenu().getItem(position);
-
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
-
-        viewPager.setOnTouchListener(new View.OnTouchListener()
-        {
-            @Override
-            public boolean onTouch(View v, MotionEvent event)
-            {
-                return true;
-            }
-        });
-        setupViewPager(viewPager);
+        fetchData = new FetchData();
     }
-
-    private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        BF = new BasicFragment();
-        AF = new AlertFragment();
-        SF = new SecurityFragment();
-        MF = new MoreFragment();
-        adapter.addFragment(BF);
-        adapter.addFragment(AF);
-        adapter.addFragment(SF);
-        adapter.addFragment(MF);
-        viewPager.setAdapter(adapter);
-    }
+    private BottomNavigationView.OnNavigationItemSelectedListener navListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+            switch (menuItem.getItemId()){
+                case R.id.nav_basic:
+                    fm.beginTransaction().hide(active).show(BF).commit();
+                    active = BF;
+                    return true;
+                case R.id.nav_alert:
+                    fm.beginTransaction().hide(active).show(AF).commit();
+                    active = AF;
+                    return true;
+                case R.id.nav_security:
+                    fm.beginTransaction().hide(active).show(SF).commit();
+                    active = SF;
+                    return true;
+                case R.id.nav_more:
+                    fm.beginTransaction().hide(active).show(MF).commit();
+                    active = MF;
+                    return true;
+            }
+            return false;
+        }
+    };
 
 
 }
