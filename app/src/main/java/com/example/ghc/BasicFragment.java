@@ -1,6 +1,7 @@
 package com.example.ghc;
 
 import android.app.ProgressDialog;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -19,7 +20,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import org.jetbrains.annotations.NotNull;
@@ -28,10 +29,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Objects;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -56,45 +57,49 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
     private Spinner CountrySpinner;
     private Spinner CitySpinner;
     private Spinner TravelSpinner;
-    private Spinner AlertSpinner;
+    private Spinner MedicalCenterSpinner;
 
-    private Button updateButton;
+     ProgressDialog ProgressLoader;
 
-    private ProgressDialog ProgressLoader;
-
-    private TextView countryErrorLabel;
-    private TextView cityErrorLabel;
-    private TextView travelErrorLabel;
-    private TextView medicalErrorLabel;
+     TextView countryErrorLabel;
+     TextView cityErrorLabel;
+     TextView travelErrorLabel;
+     TextView medicalErrorLabel;
     private TextView centerUpdateLabel; //medical center update message label
+
 
     private String GiantCountryKey;
     private String GiantCityKey;
     private String GiantTravelKey;
     private String GiantMedicalKey;
-    private String CountryToast;
-    private String CityToast;
-    private String TravelToast;
-    private String MedicalToast;
+
+    String CountryToast;
+     String CityToast;
+     String TravelToast;
+     String MedicalToast;
+
     private String getOptionURL;
+    private String updateCenterURL;
+    private String settingUpdateURL;
+
+    private SpannableString spannableMessage;
 
     private int citySelectionCounter;
     private int countrySelectionCounter;
     private int travelSelectionCounter;
     private int medicalSelectionCounter;
 
+    private Button updateButton;
     private ArrayAdapter<String> AlertAdapter;
 
     private OkHttpClient client;
+
+    private FetchData fetchData;
 
     private JSONObject your_city;
     private  JSONObject json;
     private JSONObject options;
     private boolean postRequestDone;
-
-
-
-
 
     @Nullable
     @Override
@@ -102,14 +107,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
 
         View RootView = inflater.inflate(R.layout.basic_section_layout, container, false);
 
-        getOptionURL = "https://cabinal.com/lb/api/get-options-data";
-
         client = new OkHttpClient();
-
-        citySelectionCounter = 0;
-        countrySelectionCounter = 0;
-        travelSelectionCounter = 0;
-        medicalSelectionCounter = 0;
 
         mapCountry = new HashMap<>();
         mapCity = new HashMap<>();
@@ -121,19 +119,34 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
         TravelName = new ArrayList<>();
         MedicalCenterName = new ArrayList<>();
 
+        getOptionURL = "https://cabinal.com/lb/api/get-options-data";
+        updateCenterURL = "https://cabinal.com/lb/api/update-medical-center";
+        settingUpdateURL = "https://cabinal.com/lb/api/update-settings";
+
+        citySelectionCounter = 0;
+        countrySelectionCounter = 0;
+        travelSelectionCounter = 0;
+        medicalSelectionCounter = 0;
+
+
+
         CountrySpinner = RootView.findViewById(R.id.CountrySpinner);
         CitySpinner = RootView.findViewById(R.id.CitySpinner);
         TravelSpinner = RootView.findViewById(R.id.TravelSpinner);
-        AlertSpinner = RootView.findViewById(R.id.AlertSpinner);
-        setSpinnerHeight(AlertSpinner, 575);
-        setSpinnerHeight(CountrySpinner, 1330);
-        setSpinnerHeight(CitySpinner, 825);
+        MedicalCenterSpinner = RootView.findViewById(R.id.MedicalCenterSpinner);
 
+        //update button
+        updateButton = RootView.findViewById(R.id.basicUpdateButton);
+        updateButton.setOnClickListener(this);
+        fetchData = new FetchData();
+        //Spinner drop down menu height
+        fetchData.setSpinnerHeight(MedicalCenterSpinner, 575);
+        fetchData.setSpinnerHeight(CountrySpinner, 1330);
+        fetchData.setSpinnerHeight(CitySpinner, 825);
 
-        updateButton = RootView.findViewById(R.id.updateButton);
-
+        //loader
         ProgressLoader = new ProgressDialog(getActivity());
-
+        //Error labels
         countryErrorLabel = RootView.findViewById(R.id.countryErrorLabel);
         countryErrorLabel.setVisibility(View.INVISIBLE);
         cityErrorLabel = RootView.findViewById(R.id.cityErrorLabel);
@@ -142,6 +155,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
         travelErrorLabel.setVisibility(View.INVISIBLE);
         medicalErrorLabel = RootView.findViewById(R.id.medicalErrorLabel);
         medicalErrorLabel.setVisibility(View.INVISIBLE);
+        //update centers message label
         centerUpdateLabel = RootView.findViewById(R.id.centerUpdateLabel);
         centerUpdateLabel.setVisibility(View.INVISIBLE);
 
@@ -152,9 +166,9 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
 
         clickableText();
 
-        updateButton.setOnClickListener(this);
 
         CountrySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 CountryToast = CountrySpinner.getItemAtPosition(CountrySpinner.getSelectedItemPosition()).toString();
@@ -162,51 +176,50 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
                 CityName.clear();
                 mapCity.clear();
                 CityName.add(0, "-Select your city-");
-                if (CountryToast !="-Select your country-"){
+                if (!CountryToast.equals("-Select your country-")) {
                     countrySelectionCounter += 1;
                     countryErrorLabel.setVisibility(View.INVISIBLE); //error label
                     Toast.makeText(getActivity(), CountryToast, Toast.LENGTH_LONG).show();
-                    for(String key: mapCountry.keySet()){
-                        if( mapCountry.get(key) == CountryToast ){
-                            try{
+                    for (String key : mapCountry.keySet()) {
+                        if (mapCountry.get(key).equals(CountryToast)) {
+                            try {
                                 GiantCountryKey = key;
                                 JSONArray array = your_city.getJSONArray(key);
-                                for (int i = 0; i < array.length(); i++){
-                                    JSONArray subArray  = array.getJSONArray(i);
+                                for (int i = 0; i < array.length(); i++) {
+                                    JSONArray subArray = array.getJSONArray(i);
                                     CityName.add(subArray.getString(1));
                                     mapCity.put(subArray.getString(0), subArray.getString(1));
                                 }
-                            }
-                            catch (JSONException e) {
+                            } catch (JSONException e) {
                                 e.printStackTrace();
                             }
                         }
                     }
-                }
-                else if(CountryToast == "-Select your country-" && countrySelectionCounter > 0){
+                } else if (CountryToast.equals("-Select your country-") && countrySelectionCounter > 0) {
                     countryErrorLabel.setVisibility(View.VISIBLE); //error label
                 }
-                getActivity().runOnUiThread(new Runnable() {
+                Objects.requireNonNull(getActivity()).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         CitySpinner.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, CityName));
                     }
                 });
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
 
         CitySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 postRequestDone = false;
                 CityToast = CitySpinner.getItemAtPosition(CitySpinner.getSelectedItemPosition()).toString();
-                if(CityToast =="-Select your city-" && citySelectionCounter > 0){
+                if (CityToast.equals("-Select your city-") && citySelectionCounter > 0) {
                     cityErrorLabel.setVisibility(View.VISIBLE); //error label
-                }
-                else{
+                } else {
                     cityErrorLabel.setVisibility(View.INVISIBLE); //error label
                 }
                 loadMedicalCenterSpinner(CityToast);
@@ -223,19 +236,19 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 TravelToast = TravelSpinner.getItemAtPosition(TravelSpinner.getSelectedItemPosition()).toString();
-                if (TravelToast != "-Select your GCC country-"){
+                if (!TravelToast.equals("-Select your GCC country-")) {
                     travelSelectionCounter += 1;
                     travelErrorLabel.setVisibility(View.INVISIBLE);
-                    for (String key : mapTravel.keySet()){
-                        if (mapTravel.get(key) == TravelToast){
+                    for (String key : mapTravel.keySet()) {
+                        if (mapTravel.get(key).equals(TravelToast)) {
                             GiantTravelKey = key;
                         }
                     }
                     Toast.makeText(getActivity(), TravelToast, Toast.LENGTH_SHORT).show();
 
-                    Log.d("Giants: ", "GiantCountry: "+GiantCountryKey+" GiantTravel: "+GiantTravelKey+" GianCity: "+GiantCityKey);
+                    Log.d("Giants: ", "GiantCountry: " + GiantCountryKey + " GiantTravel: " + GiantTravelKey + " GianCity: " + GiantCityKey);
                 }
-                else if(TravelToast == "-Select your GCC country-" && travelSelectionCounter > 0){
+                else if (TravelToast.equals("-Select your GCC country-") && travelSelectionCounter > 0) {
                     travelErrorLabel.setVisibility(View.VISIBLE);
                 }
             }
@@ -246,22 +259,21 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
             }
         });
 
-        AlertSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        MedicalCenterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                MedicalToast = AlertSpinner.getItemAtPosition(AlertSpinner.getSelectedItemPosition()).toString();
-                if (MedicalToast != "-Select medical center-"){
+                MedicalToast = MedicalCenterSpinner.getItemAtPosition(MedicalCenterSpinner.getSelectedItemPosition()).toString();
+                if (!MedicalToast.equals("-Select medical center-")) {
                     medicalErrorLabel.setVisibility(View.INVISIBLE);
                     Log.d("If", "Executed");
                     medicalSelectionCounter += 1;
                     for (String key : mapMedicalCenter.keySet()) {
-                        if (mapMedicalCenter.get(key) == MedicalToast) {
+                        if (mapMedicalCenter.get(key).equals(MedicalToast)) {
                             GiantMedicalKey = key;
                             Log.d("Medical Center Code", "" + GiantMedicalKey);
                         }
                     }
-                }
-                else if(MedicalToast == "-Select medical center-" && medicalSelectionCounter > 0){
+                } else if (MedicalToast.equals("-Select medical center-") && medicalSelectionCounter > 0) {
                     medicalErrorLabel.setTextColor(getResources().getColor(R.color.colorRed));
                     Log.d("Else if", "Executed");
                     medicalErrorLabel.setVisibility(View.VISIBLE);
@@ -273,12 +285,10 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
 
             }
         });
-
         return RootView;
-
     }
 
-    public void loadCountrySpinner(String URL){
+    private void loadCountrySpinner(String URL){
         Request request = new Request.Builder().url(URL).get().build();
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -323,7 +333,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
         });
     }
 
-    public JSONObject updateMedicalCenter(){
+    private JSONObject updateMedicalCenter(){
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(getOptionURL).build();
         JSONObject alert_medical_center = null;
@@ -335,23 +345,29 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
                 options = json.getJSONObject("options");
                 alert_medical_center = options.getJSONObject("alert_medical_center");
                 Log.d("alert_medical_center: ", ""+alert_medical_center);
-            } catch (JSONException e) {
+            }
+            catch (JSONException e) {
                 e.printStackTrace();
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
         return alert_medical_center;
     }
 
-    public void loadMedicalCenterSpinner(final String city){
-        getActivity().runOnUiThread(new Runnable() {
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void loadMedicalCenterSpinner(final String city){
+        centerUpdateLabel.setText(spannableMessage);
+        centerUpdateLabel.setTextColor(getResources().getColor(R.color.colorLightText));
+        Objects.requireNonNull(getActivity()).runOnUiThread(new Runnable() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void run() {
                 MedicalCenterName.clear();
                 mapMedicalCenter.clear();
                 MedicalCenterName.add(0, "-Select medical center-");
-                if (city != "-Select your city-"){
+                if (!city.equals("-Select your city-")){
                     citySelectionCounter += 1;
                     if (!postRequestDone){
                         Toast.makeText(getActivity(), city, Toast.LENGTH_SHORT).show();
@@ -360,7 +376,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
                         JSONObject alert_medical_center;
                         boolean flag = false;
                         for (String key : mapCity.keySet()) {
-                            if (mapCity.get(key) == city) {
+                            if (mapCity.get(key).equals(city)) {
                                 GiantCityKey = key; //city code through selection
                             }
                         }
@@ -383,7 +399,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
                             }
                         }
                         if (indicator) {
-                            Log.d("Condition: ", "executed "+indicator);
+                            Log.d("If condition: ", "executed "+indicator);
                             JSONObject AllCityCode = alert_medical_center.getJSONObject(GiantCountryKey);
                             Iterator cityCodeIterator = AllCityCode.keys();
                             String cityKey = null;
@@ -403,7 +419,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
                                 }
                                 else {
                                     centerUpdateLabel.setVisibility(View.VISIBLE);
-                                    Log.d("Else: ","execute");
+                                    Log.d("Else: ","executed");
                                 }
                                 if (flag){
                                     break;
@@ -414,7 +430,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
                             }
                         }
                         else{
-                            centerUpdateLabel.setVisibility(View.VISIBLE); // Need to be change
+                            centerUpdateLabel.setVisibility(View.VISIBLE);
                             Log.d("Indicator stay: ",""+indicator);
                         }
 
@@ -422,17 +438,16 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
                         e.printStackTrace();
                     }
                 }
-                AlertAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, MedicalCenterName);
-                AlertAdapter.notifyDataSetChanged(); //It is informing to the adapter that the dataset has changed after each function call
-                AlertSpinner.setAdapter(AlertAdapter);
+                AlertAdapter = new ArrayAdapter<>(Objects.requireNonNull(getActivity()), android.R.layout.simple_spinner_dropdown_item, MedicalCenterName);
+                AlertAdapter.notifyDataSetChanged(); //It is informing to the adapter that the data-set has changed after each function call
+                MedicalCenterSpinner.setAdapter(AlertAdapter);
             }
         });
 
     }
 
-    public void medicalCenterPostRequest(){
+    private void medicalCenterPostRequest(String updateCenterURL){
         postRequestDone = true;
-        String updateCenterURL = "https://cabinal.com/lb/api/update-medical-center";
         RequestBody requestBody = new FormBody.Builder()
                 .add("country", GiantCountryKey)
                 .add("city", GiantCityKey)
@@ -441,34 +456,49 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-
             }
-
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 String MedicalResponse = response.body().string();
                 Log.d("Response: ", MedicalResponse);
-                loadMedicalCenterSpinner(CityToast);
-                ProgressLoader.dismiss();
-                medicalSelectionCounter = 0;
-                medicalErrorLabel.setTextColor(getResources().getColor(R.color.colorGreen));
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        medicalErrorLabel.setVisibility(View.VISIBLE);
-                        Toast.makeText(getActivity(), "Medical Centers Updated", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
+                if (MedicalResponse.equals("true")) {
+                    loadMedicalCenterSpinner(CityToast);
+                    ProgressLoader.dismiss();
+                    medicalSelectionCounter = 0;
+                    Objects.requireNonNull(getActivity()).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (MedicalCenterName.size() > 1) {
+                                medicalErrorLabel.setTextColor(getResources().getColor(R.color.colorGreen));
+                                medicalErrorLabel.setVisibility(View.VISIBLE);
+                                Toast.makeText(getActivity(), "Medical Centers Updated", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
+                else {
+                    ProgressLoader.dismiss();
+                    centerUpdateLabel.setText("No medical centers are available for above selection.");
+                    centerUpdateLabel.setTextColor(getResources().getColor(R.color.colorRed));
+                    medicalErrorLabel.setTextColor(getResources().getColor(R.color.colorRed));
+                    medicalErrorLabel.setVisibility(View.INVISIBLE);
+                    Objects.requireNonNull(getActivity()).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity(), "No Medical Centers Found", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
                 Log.d("My Tag: ", "Function Called");
             }
         });
 
     }
 
-    public void basicSettingPostRequest(){
+    private void basicSettingPostRequest(String settingUpdateURL){
         Log.d("Giants",""+GiantCountryKey+" "+GiantCityKey+" "+GiantTravelKey+" "+GiantMedicalKey);
-        String settingUpdateURL = "https://cabinal.com/lb/api/update-settings";
+
         RequestBody requestBody = new FormBody.Builder()
                 .add("your_country", GiantCountryKey)
                 .add("your_city", GiantCityKey)
@@ -478,13 +508,14 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Log.d("Medcial", "Fail");
+                Log.d("Medical", "Fail");
             }
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                Log.d("Response: ", response.body().string());
+                Log.d("Response: ", Objects.requireNonNull(response.body()).string());
                 ProgressLoader.dismiss();
-                getActivity().runOnUiThread(new Runnable() {
+                Objects.requireNonNull(getActivity()).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(getActivity(), "Settings updated", Toast.LENGTH_SHORT).show();
@@ -496,81 +527,61 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
 
     }
 
-    public void setSpinnerHeight(Spinner spinner, int height){
-        try {
-            Field popup = Spinner.class.getDeclaredField("mPopup");
-            popup.setAccessible(true);
 
-            // Get private mPopup member variable and try cast to ListPopupWindow
-            android.widget.ListPopupWindow popupWindow = (android.widget.ListPopupWindow) popup.get(spinner);
-
-            // Set popupWindow height to 500px
-            popupWindow.setHeight(height);
-        }
-        catch (NoClassDefFoundError | ClassCastException | NoSuchFieldException | IllegalAccessException e) {
-            // silently fail...
-        }
-    }
-
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.updateButton:
-                if(CountryToast == "-Select your country-"){
+            case R.id.basicUpdateButton:
+                if(CountryToast.equals("-Select your country-")){
                     countryErrorLabel.setVisibility(View.VISIBLE);
                 }
-                if(TravelToast == "-Select your GCC country-"){
+                if(TravelToast.equals("-Select your GCC country-")){
                     travelErrorLabel.setVisibility(View.VISIBLE);
                 }
 
-                if(CityToast =="-Select your city-"){
+                if(CityToast.equals("-Select your city-")){
                     cityErrorLabel.setVisibility(View.VISIBLE);
                 }
 
-                if(MedicalToast == "-Select medical center-"){
+                if(MedicalToast.equals("-Select medical center-")){
                     medicalErrorLabel.setVisibility(View.VISIBLE);
                 }
-                if(CountryToast != "-Select your country-" && CityToast !="-Select your city-" && TravelToast != "-Select your GCC country-" && MedicalToast != "-Select medical center-"){
-                    progressLoader();
-                    basicSettingPostRequest();
+                if(!CountryToast.equals("-Select your country-") && !CityToast.equals("-Select your city-") && !TravelToast.equals("-Select your GCC country-") && !MedicalToast.equals("-Select medical center-")){
+                    fetchData.progressLoader(ProgressLoader);
+                    basicSettingPostRequest(settingUpdateURL);
                     Log.d("Medical", "Called");
                 }
                 break;
         }
     }
 
-    public void progressLoader(){
-        ProgressLoader.show();
-        ProgressLoader.setContentView(R.layout.progress_dialog);
-        ProgressLoader.getWindow().setBackgroundDrawableResource(R.color.transparent);
-        ProgressLoader.setCanceledOnTouchOutside(false);
-    }
 
-    public void clickableText(){
+
+    private void clickableText(){
         String updateMessage = getString(R.string.medical_message);
-        SpannableString spannableMessage = new SpannableString(updateMessage);
+        spannableMessage = new SpannableString(updateMessage);
         ClickableSpan clickHere = new ClickableSpan() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(@NonNull View widget) {
-                getActivity().runOnUiThread(new Runnable() {
+                Objects.requireNonNull(getActivity()).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if(CountryToast == "-Select your country-"){
+                        if(CountryToast.equals("-Select your country-")){
                             countryErrorLabel.setVisibility(View.VISIBLE);
                         }
-                        if(TravelToast == "-Select your GCC country-"){
+                        if(TravelToast.equals("-Select your GCC country-")){
                             travelErrorLabel.setVisibility(View.VISIBLE);
                         }
 
-                        if(CityToast =="-Select your city-"){
+                        if(CityToast.equals("-Select your city-")){
                             cityErrorLabel.setVisibility(View.VISIBLE);
                         }
-                        if(CountryToast != "-Select your country-" && CityToast !="-Select your city-" && TravelToast != "-Select your GCC country-"){
-                            progressLoader();
-                            medicalCenterPostRequest();
+                        if(!CountryToast.equals("-Select your country-") && !CityToast.equals("-Select your city-") && !TravelToast.equals("-Select your GCC country-")){
+                            fetchData.progressLoader(ProgressLoader);
+                            medicalCenterPostRequest(updateCenterURL);
                         }
-
-
                     }
                 });
             }
@@ -580,4 +591,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
         centerUpdateLabel.setMovementMethod(LinkMovementMethod.getInstance());
 
     }
+
+
+
 }
