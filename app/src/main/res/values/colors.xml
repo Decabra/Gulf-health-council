@@ -10,4 +10,5 @@
     <color name="colorBlack">#000</color>
     <color name="colorGrey">#292929</color>
     <color name="colorBackgroundWindow">?android:attr/windowBackground</color>
+    <color name="colorLightText">#677078</color>
 </resources>
