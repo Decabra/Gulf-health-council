@@ -58,67 +58,67 @@ public class FetchData{
         return options;
     }
 
-    JSONObject getSettings(String getSettingsURL, OkHttpClient client) throws IOException, JSONException {
-        JSONObject settings = null;
-        Request request = new Request.Builder().url(getSettingsURL).get().build();
-        Response response = client.newCall(request).execute();
-        String responseBody = response.body().string();
-        JSONObject json = new JSONObject(responseBody);
-        settings = json.getJSONObject("settings");
-        return settings;
-    }
-
-    public void setOptions(JSONObject options) {
-        this.options = options;
-    }
-
-    public JSONObject getYour_country() {
-        return your_country;
-    }
-
-    public void setYour_country(JSONObject your_country) {
-        this.your_country = your_country;
-    }
-
-    public JSONObject getCountry_to_travel() {
-        return country_to_travel;
-    }
-
-    public void setCountry_to_travel(JSONObject country_to_travel) {
-        this.country_to_travel = country_to_travel;
-    }
-
-    public JSONObject getYour_city() {
-        return your_city;
-    }
-
-    public void setYour_city(JSONObject your_city) {
-        this.your_city = your_city;
-    }
-
-    public JSONObject getAlert_medical_center() {
-        return alert_medical_center;
-    }
-
-    public void setAlert_medical_center(JSONObject alert_medical_center) {
-        this.alert_medical_center = alert_medical_center;
-    }
-
-    public JSONObject getSend_medical_list_after_minutes() {
-        return send_medical_list_after_minutes;
-    }
-
-    public void setSend_medical_list_after_minutes(JSONObject send_medical_list_after_minutes) {
-        this.send_medical_list_after_minutes = send_medical_list_after_minutes;
-    }
-
-    public JSONArray getCheck_after_time() {
-        return check_after_time;
-    }
-
-    public void setCheck_after_time(JSONArray check_after_time) {
-        this.check_after_time = check_after_time;
-    }
+//    JSONObject getSettings(String getSettingsURL, OkHttpClient client) throws IOException, JSONException {
+//        JSONObject settings = null;
+//        Request request = new Request.Builder().url(getSettingsURL).get().build();
+//        Response response = client.newCall(request).execute();
+//        String responseBody = response.body().string();
+//        JSONObject json = new JSONObject(responseBody);
+//        settings = json.getJSONObject("settings");
+//        return settings;
+//    }
+//
+//    public void setOptions(JSONObject options) {
+//        this.options = options;
+//    }
+//
+//    public JSONObject getYour_country() {
+//        return your_country;
+//    }
+//
+//    public void setYour_country(JSONObject your_country) {
+//        this.your_country = your_country;
+//    }
+//
+//    public JSONObject getCountry_to_travel() {
+//        return country_to_travel;
+//    }
+//
+//    public void setCountry_to_travel(JSONObject country_to_travel) {
+//        this.country_to_travel = country_to_travel;
+//    }
+//
+//    public JSONObject getYour_city() {
+//        return your_city;
+//    }
+//
+//    public void setYour_city(JSONObject your_city) {
+//        this.your_city = your_city;
+//    }
+//
+//    public JSONObject getAlert_medical_center() {
+//        return alert_medical_center;
+//    }
+//
+//    public void setAlert_medical_center(JSONObject alert_medical_center) {
+//        this.alert_medical_center = alert_medical_center;
+//    }
+//
+//    public JSONObject getSend_medical_list_after_minutes() {
+//        return send_medical_list_after_minutes;
+//    }
+//
+//    public void setSend_medical_list_after_minutes(JSONObject send_medical_list_after_minutes) {
+//        this.send_medical_list_after_minutes = send_medical_list_after_minutes;
+//    }
+//
+//    public JSONArray getCheck_after_time() {
+//        return check_after_time;
+//    }
+//
+//    public void setCheck_after_time(JSONArray check_after_time) {
+//        this.check_after_time = check_after_time;
+//    }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     void progressLoader(ProgressDialog ProgressLoader){
