@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">Alerts portal</string>
+    <string name="title_home_activity">GHC Alerts Portal</string>
+    <string name="country_label">Country</string>
+    <string name="city_label">City</string>
+    <string name="travel_label">Country Traveling To</string>
+    <string name="medical_label">Alert Medical Center</string>
+    <string name="button_label">Update</string>
+    <string name="country_error">select your country</string>
+    <string name="city_error">select your city</string>
+    <string name="travel_error">select your GCC country</string>
+    <string name="medical_error">select your medical center</string>
+    <string name="send_check_medical_error">Make your selection</string>
+    <string name="medical_message">No medical center found. Please Click Here to update medical centers list.</string>
+    <string name="email_box_label">Email</string>
+    <string name="debug_mode_label">Debug Mode</string>
+    <string name="send_medical_list_label">Send Medical List</string>
+    <string name="medical_alert_time_label">Send Medical List After</string>
+    <string name="sms_live_label">Live sms</string>
+    <string name="check_center_label">Check Medical Center After</string>
+    <string name="email_hint">example@xyz.com</string>
+    <string name="phone_hint">+923123456789</string>
+    <string name="title_about_activity">About us</string>
+    <string name="title_privacy_activity">Privacy policy</string>
+    <string name="title_terms_activity">Terms and conditions</string>
+    <string name="title_contact_activity">Contact us</string>
+    <string name="title_activity_login">Sign in</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+
+</resources>
