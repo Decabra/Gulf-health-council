@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_basic"
+        android:icon="@drawable/ic_format_list_bulleted_black_24dp"
+        android:title="Basic"/>
+    <item
+        android:id="@+id/nav_alert"
+        android:icon="@drawable/ic_add_alert_black_24dp"
+        android:title="Alert"/>
+    <item
+        android:id="@+id/nav_security"
+        android:icon="@drawable/ic_security_black_24dp"
+        android:title="Security"/>
+    <item
+        android:id="@+id/nav_more"
+        android:icon="@drawable/ic_more_horiz_black_24dp"
+        android:title="More"/>
+</menu>
