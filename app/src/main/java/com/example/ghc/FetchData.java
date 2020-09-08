@@ -43,20 +43,20 @@ public class FetchData{
         this.jsonData = jsonData;
     }
 
-    JSONObject getOptions(String getOptionURL, OkHttpClient client) throws IOException, JSONException {
-        JSONObject options = null;
-        Request request = new Request.Builder().url(getOptionURL).get().build();
-        Response response = client.newCall(request).execute();
-        String responseBody = response.body().string();
-        try {
-            JSONObject json = new JSONObject(responseBody);
-            options = json.getJSONObject("options");
-        }
-        catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return options;
-    }
+//    JSONObject getOptions(String getOptionURL, OkHttpClient client) throws IOException, JSONException {
+//        JSONObject options = null;
+//        Request request = new Request.Builder().url(getOptionURL).get().build();
+//        Response response = client.newCall(request).execute();
+//        String responseBody = response.body().string();
+//        try {
+//            JSONObject json = new JSONObject(responseBody);
+//            options = json.getJSONObject("options");
+//        }
+//        catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        return options;
+//    }
 
 //    JSONObject getSettings(String getSettingsURL, OkHttpClient client) throws IOException, JSONException {
 //        JSONObject settings = null;
