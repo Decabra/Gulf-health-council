@@ -44,14 +44,14 @@ public class NetworkConsistency {
         handler.removeCallbacks(PeriodicStatusChecker);
     }
 
-/*    boolean periodicNetworkChecking(){
+    boolean periodicNetworkChecking(){
         handler.postDelayed(new Runnable(){
             public void run(){
                 periodicChecker =  networkStatus();
-                handler.postDelayed(this, delay);
+                handler.postDelayed(this, Interval);
             }
-        }, delay);
+        }, Interval);
         Log.d("periodicChecker", ""+periodicChecker);
         return periodicChecker;
-    }*/
+    }
 }
