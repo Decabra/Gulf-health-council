@@ -51,7 +51,6 @@ public class AlertFragment extends Fragment implements View.OnClickListener{
     private Switch medicalSwitch;
     private TextView sendMedicalErrorLabel;
     private TextView checkMedicalErrorLabel;
-    private Button alertUpdateButton;
 
     private ArrayList EmailSeparatorArray;
     private ArrayList PhoneSeparatorArray;
@@ -111,7 +110,7 @@ public class AlertFragment extends Fragment implements View.OnClickListener{
         checkMedicalSpinner = rootView.findViewById(R.id.checkMedicalSpinner);
         debugSwitch = rootView.findViewById(R.id.debugSwitch);
         medicalSwitch = rootView.findViewById(R.id.medicalSwitch);
-        alertUpdateButton = rootView.findViewById(R.id.alertUpdateButton);
+        Button alertUpdateButton = rootView.findViewById(R.id.alertUpdateButton);
 
         alertUpdateButton.setOnClickListener(this);
 

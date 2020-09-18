@@ -329,7 +329,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
     }
 
     private JSONObject updateMedicalCenter(){
-        OkHttpClient client = new OkHttpClient();
+//        OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(getOptionURL).build();
         JSONObject alert_medical_center = null;
         try {
