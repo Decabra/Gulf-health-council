@@ -159,8 +159,8 @@ public class FetchData{
         }
     }
 
-    AlertDialog AlertDialogMessage(AlertDialog.Builder alertDialogBuilder){
-        alertDialogBuilder.setMessage("Internet disconnected!");
+    AlertDialog AlertDialogMessage(AlertDialog.Builder alertDialogBuilder, String message){
+        alertDialogBuilder.setMessage(message);
         alertDialogBuilder.setCancelable(true);
         alertDialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override

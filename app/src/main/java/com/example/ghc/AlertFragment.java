@@ -94,7 +94,7 @@ public class AlertFragment extends Fragment implements View.OnClickListener{
         fetchData.setupUI(rootView.findViewById(R.id.alertSurface), getActivity());
         networkConsistency = new NetworkConsistency(getContext());
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
-        alertDialog = fetchData.AlertDialogMessage(alertDialogBuilder);
+        alertDialog = fetchData.AlertDialogMessage(alertDialogBuilder, "Internet disconnected!");
         client = new OkHttpClient();
 
         EmailSeparatorArray = new ArrayList();

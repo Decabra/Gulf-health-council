@@ -1,5 +1,6 @@
 package com.example.ghc;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
@@ -122,7 +123,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
         ProgressLoader = new ProgressDialog(getActivity());
         networkConsistency = new NetworkConsistency(getContext());
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
-        alertDialog = fetchData.AlertDialogMessage(alertDialogBuilder);
+        alertDialog = fetchData.AlertDialogMessage(alertDialogBuilder, "Internet disconnected!");
 
         //update button
         basicUpdateButton = RootView.findViewById(R.id.basicUpdateButton);
@@ -609,6 +610,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
         });
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class AsyncTaskRunner extends AsyncTask{
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -626,7 +628,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
         if (isButtonClicked){
             basicSettingPostRequest(settingUpdateURL);
         }
-        isCountryLoad = false; isCityItemSelected = false;isClickableTextCalled = false;isButtonClicked = false;
+        isCountryLoad = false;isCityItemSelected = false;isClickableTextCalled = false;isButtonClicked = false;
         return null;
     }
 }

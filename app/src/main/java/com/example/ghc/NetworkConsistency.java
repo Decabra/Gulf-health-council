@@ -6,21 +6,17 @@ import android.net.NetworkInfo;
 import android.os.Handler;
 import android.util.Log;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 public class NetworkConsistency {
-    private Context mContext;
-    private boolean periodicChecker = false;
+    private Context Context;
+    protected boolean periodicNetworkStateChecker = false;
     private Handler handler = new Handler();
     int Interval = 5000; //milliseconds
-//    boolean
 
     NetworkConsistency(Context mContext){
-        this.mContext = mContext;
+        this.Context = mContext;
     }
     boolean networkStatus(){
-        ConnectivityManager connMgr = (ConnectivityManager)  mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connMgr = (ConnectivityManager)  Context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         return (networkInfo != null && networkInfo.isConnected());
     }
@@ -28,8 +24,7 @@ public class NetworkConsistency {
         @Override
         public void run() {
             try {
-                periodicChecker = internetIsConnected();
-                Log.d("periodicChecker: ", ""+periodicChecker);
+                periodicNetworkStateChecker = internetIsConnected();
             }
             finally {
                 handler.postDelayed(PeriodicStatusChecker, Interval);
@@ -54,5 +49,11 @@ public class NetworkConsistency {
         }
     }
 
+//    protected void networkConsistencyOutcomes(boolean checker){
+//        if (checker){
+//            Progress
+//        }
+//
+//    }
 
 }
