@@ -14,6 +14,7 @@ public class NetworkConsistency {
     private boolean periodicChecker = false;
     private Handler handler = new Handler();
     int Interval = 5000; //milliseconds
+//    boolean
 
     NetworkConsistency(Context mContext){
         this.mContext = mContext;
@@ -27,7 +28,7 @@ public class NetworkConsistency {
         @Override
         public void run() {
             try {
-                periodicChecker = networkStatus();
+                periodicChecker = internetIsConnected();
                 Log.d("periodicChecker: ", ""+periodicChecker);
             }
             finally {
@@ -44,14 +45,14 @@ public class NetworkConsistency {
         handler.removeCallbacks(PeriodicStatusChecker);
     }
 
-    boolean periodicNetworkChecking(){
-        handler.postDelayed(new Runnable(){
-            public void run(){
-                periodicChecker =  networkStatus();
-                handler.postDelayed(this, Interval);
-            }
-        }, Interval);
-        Log.d("periodicChecker", ""+periodicChecker);
-        return periodicChecker;
+    public boolean internetIsConnected() {
+        try {
+            String command = "ping -c 1 google.com";
+            return (Runtime.getRuntime().exec(command).waitFor() == 0);
+        } catch (Exception e) {
+            return false;
+        }
     }
+
+
 }
