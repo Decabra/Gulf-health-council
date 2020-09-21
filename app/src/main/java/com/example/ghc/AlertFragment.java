@@ -1,7 +1,5 @@
 package com.example.ghc;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -78,10 +76,7 @@ public class AlertFragment extends Fragment implements View.OnClickListener{
 
     private OkHttpClient client;
 
-    private ProgressDialog ProgressLoader;
-
     private NetworkConsistency networkConsistency;
-    private AlertDialog alertDialog;
 
     private boolean isLoadAlertSpinnerCalled = false;
     private boolean isButtonClicked = false;
@@ -90,11 +85,14 @@ public class AlertFragment extends Fragment implements View.OnClickListener{
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView =  inflater.inflate(R.layout.alert_section_layout, container, false);
-        fetchData = new FetchData();
-        fetchData.setupUI(rootView.findViewById(R.id.alertSurface), getActivity());
+
+        fetchData = new FetchData(getContext());
         networkConsistency = new NetworkConsistency(getContext());
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
-        alertDialog = fetchData.AlertDialogMessage(alertDialogBuilder, "Internet disconnected!");
+
+        fetchData.setupUI(rootView.findViewById(R.id.alertSurface), getActivity());
+        fetchData.cookProgressDialog();
+        fetchData.alertDialog = fetchData.AlertDialogMessage(networkConsistency.internetDisconnectedMessage);
+
         client = new OkHttpClient();
 
         EmailSeparatorArray = new ArrayList();
@@ -126,8 +124,6 @@ public class AlertFragment extends Fragment implements View.OnClickListener{
         checkMedicalErrorLabel = rootView.findViewById(R.id.checkMedicalErrorLabel);
         checkMedicalErrorLabel.setVisibility(View.INVISIBLE);
         sendMedicalErrorLabel.setVisibility(View.INVISIBLE);
-
-        ProgressLoader = new ProgressDialog(getActivity());
 
         isLoadAlertSpinnerCalled = true;
         AsyncTaskRunner runner = new AsyncTaskRunner();
@@ -323,7 +319,7 @@ public class AlertFragment extends Fragment implements View.OnClickListener{
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 Log.d("Alert: ", Objects.requireNonNull(response.body()).string());
-                ProgressLoader.dismiss();
+                fetchData.progressDialog.dismiss();
                 toastMessage("Settings updated");
             }
         });
@@ -354,15 +350,15 @@ public class AlertFragment extends Fragment implements View.OnClickListener{
                         checkMedicalErrorLabel.setVisibility(View.VISIBLE);
                     }
                     if (InvalidEmailCounter == 0 && !GiantPhoneTextKey.equals("") && InvalidNumberCounter == 0 && !sendMedicalToast.equals("-Send medical list after every-") && !checkMedicalToast.equals("-Check center after every-")) {
-                        fetchData.progressLoader(ProgressLoader);
+                        fetchData.progressDialog.show();
                         isButtonClicked = true;
                         AsyncTaskRunner runner = new AsyncTaskRunner();
                         runner.execute();
                     }
                 }
                 else{
-                    if (!alertDialog.isShowing()){
-                        alertDialog.show();
+                    if (!fetchData.alertDialog.isShowing()){
+                        fetchData.alertDialog.show();
                     }
                 }
                 break;

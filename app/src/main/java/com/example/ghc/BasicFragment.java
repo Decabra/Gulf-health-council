@@ -1,8 +1,6 @@
 package com.example.ghc;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -97,9 +95,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
 
     private OkHttpClient client = new OkHttpClient();
 
-    private FetchData fetchData = new FetchData();
-
-    private ProgressDialog ProgressLoader;
+    private FetchData fetchData;
 
     private JSONObject your_city;
     private  JSONObject json;
@@ -112,18 +108,17 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
     private boolean isButtonClicked = false;
 
     private NetworkConsistency networkConsistency;
-    private AlertDialog alertDialog;
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View RootView = inflater.inflate(R.layout.basic_section_layout, container, false);
-
-        ProgressLoader = new ProgressDialog(getActivity());
+        fetchData = new FetchData(getContext());
         networkConsistency = new NetworkConsistency(getContext());
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
-        alertDialog = fetchData.AlertDialogMessage(alertDialogBuilder, "Internet disconnected!");
+        fetchData.cookProgressDialog();
+        fetchData.alertDialog = fetchData.AlertDialogMessage(networkConsistency.internetDisconnectedMessage);
 
         //update button
         basicUpdateButton = RootView.findViewById(R.id.basicUpdateButton);
@@ -460,7 +455,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
                 Log.d("Response: ", MedicalResponse);
                 if (MedicalResponse.equals("true")) {
                     loadMedicalCenterSpinner(CityToast);
-                    ProgressLoader.dismiss();
+                    fetchData.progressDialog.dismiss();
                     medicalSelectionCounter = 0;
                     Objects.requireNonNull(getActivity()).runOnUiThread(new Runnable() {
                         @Override
@@ -474,7 +469,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
                     });
                 }
                 else {
-                    ProgressLoader.dismiss();
+                    fetchData.progressDialog.dismiss();
                     centerUpdateLabel.setText("No medical centers are available for above selection.");
                     centerUpdateLabel.setTextColor(getResources().getColor(R.color.colorRed));
                     medicalErrorLabel.setTextColor(getResources().getColor(R.color.colorRed));
@@ -504,7 +499,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
           //      Log.d("Response: ", Objects.requireNonNull(response.body()).string());
-                ProgressLoader.dismiss();
+                fetchData.progressDialog.dismiss();
                 toastMessage("Settings updated");
          //       Log.d("My Tag: ", "Function Called");
             }
@@ -538,7 +533,7 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
                             && !CityToast.equals("-Select your city-") && !CityToast.equals("")
                             && !TravelToast.equals("-Select your GCC country-") && !TravelToast.equals("")
                             && !MedicalToast.equals("-Select medical center-") && !MedicalToast.equals("")) {
-                        fetchData.progressLoader(ProgressLoader);
+                        fetchData.progressDialog.show();
                         isButtonClicked = true;
                         AsyncTaskRunner runner = new AsyncTaskRunner();
                         runner.execute();
@@ -547,8 +542,8 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
                     }
                 }
                 else{
-                    if (!alertDialog.isShowing()){
-                        alertDialog.show();
+                    if (!fetchData.alertDialog.isShowing()){
+                        fetchData.alertDialog.show();
                     }
                 }
                 break;
@@ -579,15 +574,15 @@ public class BasicFragment extends Fragment implements View.OnClickListener{
                             if (!CountryToast.equals("-Select your country-")
                                     && !CityToast.equals("-Select your city-")
                                     && !TravelToast.equals("-Select your GCC country-")) {
-                                fetchData.progressLoader(ProgressLoader);
+                                fetchData.progressDialog.show();
                                 isClickableTextCalled = true;
                                 AsyncTaskRunner runner = new AsyncTaskRunner();
                                 runner.execute();
                             }
                         }
                         else{
-                            if (!alertDialog.isShowing()){
-                                alertDialog.show();
+                            if (!fetchData.alertDialog.isShowing()){
+                                fetchData.alertDialog.show();
                             }
                         }
                     }

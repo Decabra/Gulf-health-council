@@ -1,7 +1,5 @@
 package com.example.ghc;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,42 +29,38 @@ public class SecurityFragment extends Fragment implements View.OnClickListener {
     private EditText oldPasswordTextField;
     private EditText newPasswordTextField;
     private EditText confirmPasswordTextField;
-    private String verifyURL;
-    private String settingUpdateURL;
+    private String verifyURL = "https://work.appizia.com/lb/api/verify-password";
+    private String settingUpdateURL = "https://work.appizia.com/lb/api/update-settings";
+
     private int verifyPasswordCounter;
     private OkHttpClient client;
-    private ProgressDialog progressDialog;
     private FetchData fetchData;
     private String GiantOldPassword;
     private String GiantNewPassword;
     private String GiantConfirmPassword;
     private NetworkConsistency networkConsistency;
-    private AlertDialog alertDialog;
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.security_section_layout, container, false);
-        fetchData = new FetchData();
-        fetchData.setupUI(rootView.findViewById(R.id.securitySurface), getActivity());
+
+        fetchData = new FetchData(getContext());
         networkConsistency = new NetworkConsistency(getContext());
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
-        alertDialog = fetchData.AlertDialogMessage(alertDialogBuilder, "Internet disconnected!");
+
+        fetchData.setupUI(rootView.findViewById(R.id.securitySurface), getActivity());
+        fetchData.cookProgressDialog();
+        fetchData.alertDialog = fetchData.AlertDialogMessage(networkConsistency.internetDisconnectedMessage);
 
         oldPasswordTextField = rootView.findViewById(R.id.oldPasswordTextField);
         newPasswordTextField = rootView.findViewById(R.id.newPasswordTextField);
         confirmPasswordTextField = rootView.findViewById(R.id.confirmPasswordTextField);
         Button securityUpdateButton = rootView.findViewById(R.id.securityUpdateButton);
-        verifyURL = "https://work.appizia.com/lb/api/verify-password";
-        settingUpdateURL = "https://work.appizia.com/lb/api/update-settings";
 
         securityUpdateButton.setOnClickListener(this);
 
         client = new OkHttpClient();
-
-        //loader
-        progressDialog = new ProgressDialog(getActivity());
-
 
         return rootView;
     }
@@ -98,7 +92,7 @@ public class SecurityFragment extends Fragment implements View.OnClickListener {
                 else{
                     updatePasswordPostRequest(settingUpdateURL);
                 }
-                progressDialog.dismiss();
+                fetchData.progressDialog.dismiss();
             }
         });
     }
@@ -136,7 +130,7 @@ public class SecurityFragment extends Fragment implements View.OnClickListener {
             confirmPasswordTextField.setError("Passwords didn't match");
         }
         else {
-            fetchData.progressLoader(progressDialog);
+            fetchData.progressDialog.show();
             passwordVerificationPostRequest(verifyURL);
         }
     }
@@ -149,8 +143,8 @@ public class SecurityFragment extends Fragment implements View.OnClickListener {
                 preCheckups();
             }
             else{
-                if (!alertDialog.isShowing()){
-                    alertDialog.show();
+                if (!fetchData.alertDialog.isShowing()){
+                    fetchData.alertDialog.show();
                 }
             }
         }

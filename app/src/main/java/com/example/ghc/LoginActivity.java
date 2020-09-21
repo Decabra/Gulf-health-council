@@ -4,13 +4,10 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -19,7 +16,6 @@ import android.widget.EditText;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -29,15 +25,13 @@ import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private ProgressDialog progressDialog;
     private Intent intent;
     private EditText loginEditText;
-    private FetchData fetchData = new FetchData();
+    private FetchData fetchData;
     private String passwordInput = "";
     private NetworkConsistency networkConsistency;
-    private AlertDialog alertDialog;
 
-
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,20 +39,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         loginEditText = findViewById(R.id.loginEditText);
 
+        networkConsistency = new NetworkConsistency(this);
+        fetchData = new FetchData(this);
+
+//        networkConsistency.fetchData = fetchData;
+        fetchData.cookProgressDialog();
+
         fetchData.setupUI(findViewById(R.id.loginSurface), LoginActivity.this);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN); //it is to initially hide keyboard on login screen
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        networkConsistency = new NetworkConsistency(this);
 
         Button loginPasswordButton = findViewById(R.id.loginPasswordButton);
         loginPasswordButton.setOnClickListener(this);
 
-        alertDialog = fetchData.AlertDialogMessage(alertDialogBuilder, "Internet disconnected!");
+        fetchData.alertDialog = fetchData.AlertDialogMessage(networkConsistency.internetDisconnectedMessage);
 
         NetworkAsyncTaskRunner networkAsyncTaskRunner = new NetworkAsyncTaskRunner();
         networkAsyncTaskRunner.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        Log.d("periodicChecker: ", ""+ networkConsistency.periodicNetworkStateChecker);
 
     }
 
@@ -83,8 +79,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         loginEditText.setError("Required field");
                     }
                 } else {
-                    if (!alertDialog.isShowing()) {
-                        alertDialog.show();
+                    if (!fetchData.alertDialog.isShowing()) {
+                        fetchData.alertDialog.show();
                     }
                     Log.d("Internet: ", "Not Connected");
                 }
@@ -116,13 +112,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         return decision;
     }
 
-    protected void networkConsistencyOutcomes(boolean checker){
-        if (checker){
-//            Progress
-        }
-
-    }
-
     @SuppressLint("StaticFieldLeak")
     private class GatewayAsyncTaskRunner extends AsyncTask<Boolean, Boolean, Boolean> {
         //        long startTime;
@@ -130,11 +119,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         @Override
         protected void onPreExecute() {
 //            startTime = System.currentTimeMillis();
-            progressDialog = new ProgressDialog(LoginActivity.this);
             intent = new Intent(LoginActivity.this, MainActivity.class);
 //            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            fetchData.progressLoader(progressDialog);
+            fetchData.progressDialog.show();
             super.onPreExecute();
         }
 
@@ -153,7 +141,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 //                Log.d("Print decision", "" + o);
                 loginEditText.setError("Wrong password");
             }
-            progressDialog.dismiss();
+            fetchData.progressDialog.dismiss();
 //            long elapsedTime = System.currentTimeMillis() - startTime;
 //            long elapsedSeconds = elapsedTime / 1000;
 //            Log.d("Time elapsed",""+elapsedSeconds);
@@ -162,12 +150,21 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     @SuppressLint("StaticFieldLeak")
-    private class NetworkAsyncTaskRunner extends AsyncTask<Void, Void, Void> {
-
+    private class NetworkAsyncTaskRunner extends AsyncTask<Boolean, Boolean, Boolean> {
         @Override
-        protected Void doInBackground(Void... params) {
-            networkConsistency.startRepeatingTask();
-            return null;
+        protected Boolean doInBackground(Boolean... booleans) {
+            return networkConsistency.startRepeatingTask();
         }
+        /*@Override
+        protected void onPostExecute(Boolean aBoolean) {
+            super.onPostExecute(aBoolean);
+            Log.d("aBoolean: ", ""+aBoolean);
+            if (!aBoolean){
+                if (fetchData.progressDialog.isShowing())
+                    fetchData.progressDialog.dismiss();
+                if (!fetchData.alertDialog.isShowing())
+                    fetchData.alertDialog.show();
+            }
+        }*/
     }
 }

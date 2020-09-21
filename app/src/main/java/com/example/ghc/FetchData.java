@@ -3,6 +3,7 @@ package com.example.ghc;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.view.MotionEvent;
@@ -27,6 +28,7 @@ import okhttp3.Response;
 public class FetchData{
 
     private JSONObject jsonData;
+    private Context context;
     private JSONObject options;
     private JSONObject your_country;
     private JSONObject country_to_travel;
@@ -34,6 +36,14 @@ public class FetchData{
     private JSONObject alert_medical_center;
     private JSONObject send_medical_list_after_minutes;
     private JSONArray check_after_time;
+    protected AlertDialog alertDialog;
+    protected AlertDialog.Builder alertDialogBuilder;
+    protected ProgressDialog progressDialog;
+
+
+    FetchData(Context context){
+        this.context = context;
+    }
 
     public JSONObject getJsonData() {
         return jsonData;
@@ -121,13 +131,12 @@ public class FetchData{
 //    }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    void progressLoader(ProgressDialog ProgressLoader){
-        ProgressLoader.show();
-        ProgressLoader.setContentView(R.layout.progress_dialog);
-        Objects.requireNonNull(ProgressLoader.getWindow()).setBackgroundDrawableResource(R.color.transparent);
-        ProgressLoader.setCanceledOnTouchOutside(false);
+    void cookProgressDialog(){
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setContentView(R.layout.progress_dialog);
+        Objects.requireNonNull(progressDialog.getWindow()).setBackgroundDrawableResource(R.color.transparent);
+        progressDialog.setCanceledOnTouchOutside(false);
     }
-
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     static void hideSoftKeyboard(Activity activity) {
@@ -159,7 +168,8 @@ public class FetchData{
         }
     }
 
-    AlertDialog AlertDialogMessage(AlertDialog.Builder alertDialogBuilder, String message){
+    AlertDialog AlertDialogMessage(String message){
+        alertDialogBuilder = new AlertDialog.Builder(context);
         alertDialogBuilder.setMessage(message);
         alertDialogBuilder.setCancelable(true);
         alertDialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

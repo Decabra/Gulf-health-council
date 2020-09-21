@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity{
     final MoreFragment MF = new MoreFragment();
     final FragmentManager fm = getSupportFragmentManager();
     Fragment active = BF;
-    private FetchData fetchData = new FetchData();
+//    private FetchData fetchData = new FetchData();
 
     BottomNavigationView bottomNavigation;
 
