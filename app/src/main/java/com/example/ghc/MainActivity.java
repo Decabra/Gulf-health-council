@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity{
 
         /*Threads don't allow network operations on main thread and if you try to do that it will crash your app.
         Below will put the thread in strict mode means network operations can be performed on main thread but it will slow down your app.
-        Alternative option is to use AsyncTask to perform Network operation in background and avoid your app from being slowing down.
+        Alternative option is to use AsyncTask to perform Network operation in background and avoid your app from getting slow down.
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         strictMode.setThreadPolicy(policy);*/
 
@@ -44,8 +45,46 @@ public class MainActivity extends AppCompatActivity{
         progressDialog = new ProgressDialog(this);
         AsyncTaskRunner runner = new AsyncTaskRunner();
         runner.execute();
+        Log.d("MainActivity: ", "Created");
 
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d("MainActivity: ", "Destroyed");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d("MainActivity: ", "Start");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d("MainActivity: ", "Stop");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d("MainActivity: ", "Restart");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("MainActivity: ", "Resume");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d("MainActivity: ", "Paused");
+    }
+
     private BottomNavigationView.OnNavigationItemSelectedListener navListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {

@@ -1,5 +1,6 @@
 package com.example.ghc;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -15,8 +16,8 @@ public class NetworkConsistency {
     private int Interval = 5000; //milliseconds
     protected String internetDisconnectedMessage = "Internet disconnected!";
     protected String plzCheckInternetMessage = "Please check your Internet Connection";
-//    protected FetchData fetchData;
-
+    FetchData fetchData;
+    Activity activity;
 
     NetworkConsistency(Context mContext){
         this.mContext = mContext;
@@ -30,9 +31,9 @@ public class NetworkConsistency {
         @Override
         public void run() {
             try {
-                periodicNetworkStateChecker = internetIsConnected();
+                periodicNetworkStateChecker = isInternetConnected();
                 Log.d("periodicChecker: ", ""+ periodicNetworkStateChecker);
-//                networkConsistencyOutcomes(periodicNetworkStateChecker, fetchData.progressDialog, fetchData.alertDialog);
+                networkConsistencyOutcomes(periodicNetworkStateChecker);
             }
             finally {
                 handler.postDelayed(PeriodicStatusChecker, Interval);
@@ -40,16 +41,15 @@ public class NetworkConsistency {
         }
     };
 
-    boolean startRepeatingTask() {
+    void startRepeatingTask() {
         PeriodicStatusChecker.run();
-        return periodicNetworkStateChecker;
     }
 
     void stopRepeatingTask() {
         handler.removeCallbacks(PeriodicStatusChecker);
     }
 
-    public boolean internetIsConnected() {
+    public boolean isInternetConnected() {
         try {
             String command = "ping -c 1 google.com";
             return (Runtime.getRuntime().exec(command).waitFor() == 0);
@@ -58,8 +58,18 @@ public class NetworkConsistency {
         }
     }
 
-//    protected void networkConsistencyOutcomes(boolean checker, ProgressDialog progressDialog, AlertDialog alertDialog){
-//
-//    }
+    protected void networkConsistencyOutcomes(boolean checker){
+        if (!checker){
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (fetchData.progressDialog.isShowing())
+                        fetchData.progressDialog.dismiss();
+                    if (!fetchData.alertDialog.isShowing())
+                        fetchData.alertDialog.show();
+                }
+            });
+        }
+    }
 
 }

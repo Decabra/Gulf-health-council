@@ -4,6 +4,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -30,6 +31,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private FetchData fetchData;
     private String passwordInput = "";
     private NetworkConsistency networkConsistency;
+    ProgressDialog progressDialog;
+    String appGatewayResponseBody = null;
+
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -41,9 +45,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         networkConsistency = new NetworkConsistency(this);
         fetchData = new FetchData(this);
-
-//        networkConsistency.fetchData = fetchData;
-        fetchData.cookProgressDialog();
+        progressDialog = new ProgressDialog(this);
+        fetchData.progressDialog = progressDialog;
+        networkConsistency.fetchData = fetchData;
+        networkConsistency.activity = LoginActivity.this;
 
         fetchData.setupUI(findViewById(R.id.loginSurface), LoginActivity.this);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN); //it is to initially hide keyboard on login screen
@@ -55,13 +60,47 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         NetworkAsyncTaskRunner networkAsyncTaskRunner = new NetworkAsyncTaskRunner();
         networkAsyncTaskRunner.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
+        Log.d("Activity: ", "Created");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+//        networkConsistency.stopRepeatingTask();
+//        fetchData.alertDialog.dismiss();
+        Log.d("Activity: ", "Destroyed");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d("Activity: ", "Start");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d("Activity: ", "Stop");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d("Activity: ", "Restart");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("Activity: ", "Resume");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
         networkConsistency.stopRepeatingTask();
+        fetchData.alertDialog.dismiss();
+        Log.d("Activity: ", "Paused");
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -90,10 +129,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    private boolean applicationGateway() {
+    private boolean appGateway() {
         Response response;
-        String responseBody = null;
-        boolean decision;
+        boolean decision = false;
         //Have to work on Timeouts
 //        OkHttpClient client = new OkHttpClient().newBuilder().callTimeout(1 , TimeUnit.SECONDS).build();
         OkHttpClient client = new OkHttpClient();
@@ -102,13 +140,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         Request request = new Request.Builder().url(verifyURL).post(requestBody).build();
         try {
             response = client.newCall(request).execute();
-            responseBody = Objects.requireNonNull(response.body()).string();
+            appGatewayResponseBody = Objects.requireNonNull(response.body()).string();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.d("responseBody: ", "" + responseBody);
-        assert responseBody != null;
-        decision = !responseBody.equals("\"Invalid Password!\"");
+        Log.d("responseBody: ", "" + appGatewayResponseBody);
+        if (appGatewayResponseBody != null)
+            decision = !appGatewayResponseBody.equals("\"Invalid Password!\"");
         return decision;
     }
 
@@ -122,14 +160,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             intent = new Intent(LoginActivity.this, MainActivity.class);
 //            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            fetchData.progressDialog.show();
+            fetchData.cookProgressDialog();
             super.onPreExecute();
         }
 
         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
         protected Boolean doInBackground(Boolean... booleans) {
-            return applicationGateway();
+            return appGateway();
         }
 
         @Override
@@ -137,11 +175,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 //            Log.d("Print decision", "" + o);
             if (o) {
                 startActivity(intent);
-            } else {
+            }
+            else if (!o && appGatewayResponseBody == null){
+                fetchData.progressDialog.dismiss();
+                if (!fetchData.alertDialog.isShowing())
+                    fetchData.alertDialog.show();
+            }
+            else {
 //                Log.d("Print decision", "" + o);
                 loginEditText.setError("Wrong password");
+                fetchData.progressDialog.dismiss();
             }
-            fetchData.progressDialog.dismiss();
 //            long elapsedTime = System.currentTimeMillis() - startTime;
 //            long elapsedSeconds = elapsedTime / 1000;
 //            Log.d("Time elapsed",""+elapsedSeconds);
@@ -150,21 +194,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     @SuppressLint("StaticFieldLeak")
-    private class NetworkAsyncTaskRunner extends AsyncTask<Boolean, Boolean, Boolean> {
+    private class NetworkAsyncTaskRunner extends AsyncTask<Void, Void, Void> {
         @Override
-        protected Boolean doInBackground(Boolean... booleans) {
-            return networkConsistency.startRepeatingTask();
+        protected Void doInBackground(Void... voids) {
+            networkConsistency.startRepeatingTask();
+            return null;
         }
-        /*@Override
-        protected void onPostExecute(Boolean aBoolean) {
-            super.onPostExecute(aBoolean);
-            Log.d("aBoolean: ", ""+aBoolean);
-            if (!aBoolean){
-                if (fetchData.progressDialog.isShowing())
-                    fetchData.progressDialog.dismiss();
-                if (!fetchData.alertDialog.isShowing())
-                    fetchData.alertDialog.show();
-            }
-        }*/
     }
 }

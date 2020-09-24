@@ -90,7 +90,7 @@ public class AlertFragment extends Fragment implements View.OnClickListener{
         networkConsistency = new NetworkConsistency(getContext());
 
         fetchData.setupUI(rootView.findViewById(R.id.alertSurface), getActivity());
-        fetchData.cookProgressDialog();
+//        fetchData.cookProgressDialog();
         fetchData.alertDialog = fetchData.AlertDialogMessage(networkConsistency.internetDisconnectedMessage);
 
         client = new OkHttpClient();
@@ -319,7 +319,7 @@ public class AlertFragment extends Fragment implements View.OnClickListener{
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 Log.d("Alert: ", Objects.requireNonNull(response.body()).string());
-                fetchData.progressDialog.dismiss();
+//                fetchData.progressDialog.dismiss();
                 toastMessage("Settings updated");
             }
         });
@@ -350,7 +350,7 @@ public class AlertFragment extends Fragment implements View.OnClickListener{
                         checkMedicalErrorLabel.setVisibility(View.VISIBLE);
                     }
                     if (InvalidEmailCounter == 0 && !GiantPhoneTextKey.equals("") && InvalidNumberCounter == 0 && !sendMedicalToast.equals("-Send medical list after every-") && !checkMedicalToast.equals("-Check center after every-")) {
-                        fetchData.progressDialog.show();
+//                        fetchData.progressDialog.show();
                         isButtonClicked = true;
                         AsyncTaskRunner runner = new AsyncTaskRunner();
                         runner.execute();

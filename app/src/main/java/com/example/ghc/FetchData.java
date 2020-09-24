@@ -129,10 +129,10 @@ public class FetchData{
 //    public void setCheck_after_time(JSONArray check_after_time) {
 //        this.check_after_time = check_after_time;
 //    }
-
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     void cookProgressDialog(){
-        progressDialog = new ProgressDialog(context);
+//        progressDialog = new ProgressDialog(context);
+        progressDialog.show();
         progressDialog.setContentView(R.layout.progress_dialog);
         Objects.requireNonNull(progressDialog.getWindow()).setBackgroundDrawableResource(R.color.transparent);
         progressDialog.setCanceledOnTouchOutside(false);

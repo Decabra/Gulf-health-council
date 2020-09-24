@@ -50,7 +50,7 @@ public class SecurityFragment extends Fragment implements View.OnClickListener {
         networkConsistency = new NetworkConsistency(getContext());
 
         fetchData.setupUI(rootView.findViewById(R.id.securitySurface), getActivity());
-        fetchData.cookProgressDialog();
+//        fetchData.cookProgressDialog();
         fetchData.alertDialog = fetchData.AlertDialogMessage(networkConsistency.internetDisconnectedMessage);
 
         oldPasswordTextField = rootView.findViewById(R.id.oldPasswordTextField);
@@ -92,7 +92,7 @@ public class SecurityFragment extends Fragment implements View.OnClickListener {
                 else{
                     updatePasswordPostRequest(settingUpdateURL);
                 }
-                fetchData.progressDialog.dismiss();
+//                fetchData.progressDialog.dismiss();
             }
         });
     }
@@ -130,7 +130,7 @@ public class SecurityFragment extends Fragment implements View.OnClickListener {
             confirmPasswordTextField.setError("Passwords didn't match");
         }
         else {
-            fetchData.progressDialog.show();
+//            fetchData.progressDialog.show();
             passwordVerificationPostRequest(verifyURL);
         }
     }
