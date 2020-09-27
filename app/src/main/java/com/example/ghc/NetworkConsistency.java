@@ -1,8 +1,6 @@
 package com.example.ghc;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -31,7 +29,7 @@ public class NetworkConsistency {
         @Override
         public void run() {
             try {
-                periodicNetworkStateChecker = isInternetConnected();
+                periodicNetworkStateChecker = isRealInternetConnected();
                 Log.d("periodicChecker: ", ""+ periodicNetworkStateChecker);
                 networkConsistencyOutcomes(periodicNetworkStateChecker);
             }
@@ -49,10 +47,15 @@ public class NetworkConsistency {
         handler.removeCallbacks(PeriodicStatusChecker);
     }
 
-    public boolean isInternetConnected() {
+    public boolean isRealInternetConnected() {
         try {
+            long startTime = System.currentTimeMillis();
             String command = "ping -c 1 google.com";
-            return (Runtime.getRuntime().exec(command).waitFor() == 0);
+            boolean IR = (Runtime.getRuntime().exec(command).waitFor() == 0);
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            long elapsedSeconds = elapsedTime / 1000;
+            Log.d("Time elapsed",""+elapsedSeconds);
+            return IR;
         } catch (Exception e) {
             return false;
         }
